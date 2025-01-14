@@ -1,0 +1,112 @@
+---
+title: "Actividad 3"
+author: "Joana Mercado, Leire Irusta, Miquel Bovea, David Sanz, Daniel Domínguez"
+date: "2025-01-14"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+setwd("~/ruta/al/repositorio")
+
+#Librerías necesarias
+
+library(dplyr)
+library(caret)
+library(randomForest)
+
+
+# Cargamos los encabezados del dataframe desde el archivo column_names.txt
+
+encabezados <- readLines("column_names.txt")
+
+# Cargamos los datos desde el archivo gene_expression.csv
+
+datos <- read.csv("gene_expression.csv", header = FALSE, sep = ";")
+
+# Asignamos los encabezados al dataframe
+
+colnames(datos) <- encabezados
+
+# Guardamos el dataframe con encabezados en un nuevo archivo CSV
+
+write.csv(datos, "datos_combinados.csv", row.names = FALSE)
+data <- read.csv("datos_combinados.csv")
+
+# Cargamos las etiquetas de los datos (no tienen encabezados, por lo que se lo añadimos)
+
+encabezado_clases <- c("Sample", "Class")
+clases <- read.csv('classes.csv', header = FALSE, sep = ";")
+colnames(clases) <- encabezado_clases
+
+#Al observar los datos vemos que algunos genes tienen 0 expresión en todas las muestras, por lo que eliminamos las columnas con valor 0 que no aportan información
+
+sumas <- colSums(data) # sumo los datos por columnas
+columnascero <- names(sumas[sumas==0]) # veo cuantas sumas son == 0
+data2 <- data[, !names(data) %in% columnascero] # reemplazo el dataset df sin esas columnas
+
+#Incluimos la columna de la clase de cada muestra y escalamos los datos
+df <- cbind(clases["Class"],scale(data2))
+
+#Asignamos el ID de cada muestra al nombre de cada fila
+rownames(df) <- clases$Sample
+```
+
+
+```{r training split}
+#Vamos a clasificar por tipo de tumor (AGH, CFB, CGC, CHC y HPB)
+
+table(df$Class)
+
+df$Class <- as.factor(df$Class)
+
+#Vamos a sembrar una semilla y dividir el set para el entrenamiento
+
+set.seed(1998)
+trainIndex <- createDataPartition(df$Class, p = 0.8, list = FALSE)
+trainData <- df[trainIndex,]
+testData <- df[-trainIndex,]
+```
+
+
+
+```{r random forest}
+modelLookup(model = "rf")
+
+set.seed(1998)
+rfModel <- train(Class ~ .,
+                 data = trainData,
+                 method = "rf",
+                 trControl = trainControl(method = "cv", number = 10),
+                 tuneLength = 10,
+                 prob.model = TRUE)
+rfModel
+
+plot(rfModel)
+
+predictionsrf <- predict(rfModel, newdata = testData, type = "raw")
+
+CMrf <- confusionMatrix(predictionsrf, testData$Class)
+
+# Imprimimos la matriz de confusión
+print(CMrf)
+
+# Extraemos las métricas de precisión, sensibilidad, recall y calculamos F1-score para cada clase 
+
+precision <- CMrf$byClass[, "Pos Pred Value"] 
+recall <- CMrf$byClass[, "Sensitivity"]      
+especificidad <- CMrf$byClass[,"Specificity"]
+f1_scores <- 2 * (precision * recall) / (precision + recall)
+
+# Mostramos las métricas de sensibilidad, especificidad, precisión y F1-Score por clase
+
+cat("Precisión:\n")
+print(precision)
+cat("Recall (sensibilidad):\n")
+print(recall)
+cat("Especificidad:\n")
+print(especificidad)
+cat("F1-Score:\n")
+print(f1_scores)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
