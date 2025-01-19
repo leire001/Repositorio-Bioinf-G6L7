@@ -149,7 +149,7 @@ cat("Sensibilidad (Recall): ", recall, "\n")
 cat("Especificidad: ", specificity, "\n")
 cat("Score F1: ", f1_score, "\n")
 
-##. Visualizar la separación de clases
+## Visualizar la separación de clases
 
 # Graficar con ggplot2
 library(ggplot2)
