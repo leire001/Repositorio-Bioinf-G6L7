@@ -23,6 +23,8 @@ El repositorio se organiza en las siguientes carpetas:
 3. **Métodos supervisados**  
    Contiene el código para ejecutar un modelo de Random Forest y evaluar su desempeño.  
    - Incluye scripts para realizar la clasificación y analizar los resultados del modelo.
+    Contiene el código para ejecutar un modelo de SVM y evaluar su desempeño.  
+   - Incluye scripts para realizar la clasificación y analizar los resultados del modelo.
 
 4. **Métodos de reducción de dimensionalidad**  
    Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como PCA (Análisis de Componentes Principales) u otros métodos similares.
