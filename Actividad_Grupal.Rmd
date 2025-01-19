@@ -66,6 +66,10 @@ set.seed(1998)
 trainIndex <- createDataPartition(df$Class, p = 0.8, list = FALSE)
 trainData <- df[trainIndex,]
 testData <- df[-trainIndex,]
+
+# Convertir la variable objetivo en factor (si no lo está)
+train_data$Class <- as.factor(train_data$Class)
+test_data$Class <- as.factor(test_data$Class)
 ```
 
 
@@ -110,27 +114,10 @@ cat("F1-Score:\n")
 print(f1_scores)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-#SVM
-
-## Dividir los datos en entrenamiento y prueba
-
-# Dividir datos en entrenamiento y prueba
-set.seed(1998)  # Para reproducibilidad
-train_index <- createDataPartition(df$Class, p = 0.8, list = FALSE)
-
-# Crear conjuntos de entrenamiento y prueba
-train_data <- df[train_index, ]
-test_data <- df[-train_index, ]
-
-## Entrenar el modelo SVM clasificación
-
-# Convertir la variable objetivo en factor (si no lo está)
-train_data$Class <- as.factor(train_data$Class)
-test_data$Class <- as.factor(test_data$Class)
+```{r SVM}
 
 # Entrenar el modelo SVM
+set.seed(1998)  
 svm_model <- svm(Class ~ ., data = train_data, kernel = "linear", scale = TRUE)
 
 # Ver un resumen del modelo
@@ -180,3 +167,5 @@ saveRDS(svm_model, "svm_classification_model.rds")
 
 # Guardar la matriz de confusión
 write.csv(as.table(confusion_mat), "confusion_matrix.csv", row.names = TRUE)
+
+```
