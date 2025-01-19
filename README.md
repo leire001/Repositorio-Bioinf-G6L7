@@ -37,5 +37,6 @@ El repositorio se organiza en las siguientes carpetas:
   - `caret`
   - `randomForest`
   - `dplyr`
+  - `e1071`
   - Añadir las necesarias para el resto de métodos
 
