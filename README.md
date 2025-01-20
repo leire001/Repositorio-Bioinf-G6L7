@@ -35,10 +35,11 @@ El repositorio se organiza en las siguientes carpetas:
 ## Requisitos del entorno
 
 - **R versión ≥ 4.0.0**  
-- Librerías de R necesarias (se instalan automáticamente en los scripts de preparación de datos):
+- Librerías de R necesarias:
   - `caret`
   - `randomForest`
   - `dplyr`
   - `e1071`
+  - `ggplot2`
   - Añadir las necesarias para el resto de métodos
 
