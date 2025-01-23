@@ -30,7 +30,7 @@ El repositorio se organiza en las siguientes carpetas:
    
 
 4. **Métodos no supervisados**  
-   Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como t-SNE y MDS; y para realizar análisis de clusterización como 
+   Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como t-SNE y MDS; y para realizar análisis de clusterización como k-means (clusterización no jerárquica) y variación mínima de Ward (clusterización jerárquica aglomerativa).
 
 ## Requisitos del entorno
 
@@ -46,5 +46,8 @@ El repositorio se organiza en las siguientes carpetas:
   - `rattle`
   - `stats`
   - `RTsne`
+  - `factoextra`
+  - `cluster`
+  - `ggdendro`
   - Añadir las necesarias para el resto de métodos
 
