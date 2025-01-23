@@ -29,11 +29,8 @@ El repositorio se organiza en las siguientes carpetas:
    - Incluye scripts para realizar la clasificación y analizar los resultados del modelo.
    
 
-4. **Métodos de reducción de dimensionalidad**  
-   Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como PCA (Análisis de Componentes Principales) u otros métodos similares.
-
-5. **Métodos de clusterización**  
-   Contiene el código para realizar análisis de clusterización, como K-means, clustering jerárquico, entre otros.
+4. **Métodos no supervisados**  
+   Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como t-SNE y MDS; y para realizar análisis de clusterización como 
 
 ## Requisitos del entorno
 
@@ -47,5 +44,7 @@ El repositorio se organiza en las siguientes carpetas:
   - `rpart`
   - `rpart.plot`
   - `rattle`
+  - `stats`
+  - `RTsne`
   - Añadir las necesarias para el resto de métodos
 
