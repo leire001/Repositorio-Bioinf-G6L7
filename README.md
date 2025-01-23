@@ -49,5 +49,4 @@ El repositorio se organiza en las siguientes carpetas:
   - `factoextra`
   - `cluster`
   - `ggdendro`
-  - Añadir las necesarias para el resto de métodos
 
