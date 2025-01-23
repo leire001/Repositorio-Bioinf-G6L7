@@ -1,10 +1,7 @@
 library(dplyr)
 library(caret)
-library(randomForest)
-library(library(e1071)   # Para SVM
-library(rpart)  # Para DT
-library(rpart.plot) # Para DT
-library(rattle) # Para DT
+library(stats)
+library(Rtsne)
         
         
 # Cargamos los encabezados del dataframe desde el archivo column_names.txt
