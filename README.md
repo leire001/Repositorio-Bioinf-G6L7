@@ -23,14 +23,14 @@ El repositorio se organiza en las siguientes carpetas:
 3. **Métodos supervisados**  
    Contiene el código para ejecutar un modelo de Random Forest y evaluar su desempeño.  
    - Incluye scripts para realizar la clasificación y analizar los resultados del modelo.
-    Contiene el código para ejecutar un modelo de SVM y evaluar su desempeño.  
+   Contiene el código para ejecutar un modelo de SVM y evaluar su desempeño.  
    - Incluye scripts para realizar la clasificación y analizar los resultados del modelo.
+   Contiene el código para ejecutar un modelo de Decission Tree y evaluar su desempeño.  
+   - Incluye scripts para realizar la clasificación y analizar los resultados del modelo.
+   
 
-4. **Métodos de reducción de dimensionalidad**  
-   Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como PCA (Análisis de Componentes Principales) u otros métodos similares.
-
-5. **Métodos de clusterización**  
-   Contiene el código para realizar análisis de clusterización, como K-means, clustering jerárquico, entre otros.
+4. **Métodos no supervisados**  
+   Contiene los scripts para aplicar técnicas de reducción de dimensionalidad, como t-SNE y MDS; y para realizar análisis de clusterización como k-means (clusterización no jerárquica) y variación mínima de Ward (clusterización jerárquica aglomerativa).
 
 ## Requisitos del entorno
 
@@ -41,5 +41,12 @@ El repositorio se organiza en las siguientes carpetas:
   - `dplyr`
   - `e1071`
   - `ggplot2`
-  - Añadir las necesarias para el resto de métodos
+  - `rpart`
+  - `rpart.plot`
+  - `rattle`
+  - `stats`
+  - `RTsne`
+  - `factoextra`
+  - `cluster`
+  - `ggdendro`
 
