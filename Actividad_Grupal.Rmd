@@ -6,7 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=TRUE}
-setwd("~/ruta/al/repositorio")
+
+setwd("C:/Users/joana/Desktop/Master Bioinformatica/Algoritmos/Actividad_3")
 
 #Librerías necesarias
 
@@ -54,11 +55,106 @@ sumas <- colSums(data) # sumo los datos por columnas
 columnascero <- names(sumas[sumas==0]) # veo cuantas sumas son == 0
 data2 <- data[, !names(data) %in% columnascero] # reemplazo el dataset df sin esas columnas
 
-#Incluimos la columna de la clase de cada muestra y escalamos los datos
+#Comprobamos que no haya datos NA
+
+any(is.na(df))
+
+#Al no haberlos, continuamos incluyendo la columna de la clase de cada muestra y escalamos los datos
 df <- cbind(clases["Class"],scale(data2))
 
 #Asignamos el ID de cada muestra al nombre de cada fila
 rownames(df) <- clases$Sample
+
+
+```
+
+```{r MDS}
+
+##Reducimos la dimensionalidad mediante el método MDS
+
+#Primero calculamos la matriz de las distancias euclidias
+distancias<- dist(df, method = "euclidean")
+
+#Usamos la función mcdscale para realizar el MDS
+mdsresults<-cmdscale(distancias, eig = TRUE, k=2)
+
+#Calculamos la varianza explicada
+varianza<-mdsresults$eig/sum(mdsresults$eig)*100
+
+#Pasamos a df los datos 
+mds.df<-data.frame(mdsresults$points)
+colnames(mds.df) <- c("Dim1", "Dim2")
+
+#Graficamos    
+mds.df$Class<-clases$Class
+
+library(ggplot2)
+ggplot(mds.df, aes(x=Dim1, y=Dim2, color= Class))+
+  geom_point(size=2)+
+  scale_color_manual(values = c("red", "green", "yellow", "blue", "purple"))+
+  labs(title = "MDS", x = "D1", y = "D2")
+theme_minimal()
+
+```
+
+```{r t-SNE}
+#Realizamos la técnica t-SNE de reducción de dimensionalidad.
+library(Rtsne)
+#En primer lugar creamos un df sólo con datos numéricos
+
+df.numerico <- df[, sapply(df, is.numeric)]
+
+#Ahora hay que crear una matriz con los datos
+
+matriz<-as.matrix(df.numerico)
+
+#Hay que usar una semilla de aleatorización para que sea reproducible
+set.seed(142)
+
+#Añadimos el código
+tsne<-Rtsne(X=df.numerico)
+tsne_result <- Rtsne(matriz, dims = 2, perplexity = 20, verbose = TRUE, max_iter = 500)
+
+#Creamos un data frame con los resultados anteriores
+
+tsne_df<-as.data.frame(tsne_result$Y)
+colnames(tsne_df)<-c("Dim1", "Dim2")
+tsne_df$Class<-df$Class
+
+#Graficamos
+
+ggplot(tsne_df, aes(x=Dim1, y=Dim2, colour = Class))+
+  geom_point(size=1)+
+  scale_color_manual(values = c("red", "green", "yellow", "blue", "purple"))+
+  labs(title ="t-SNE", x="Dimensión 1", y="Dimensión 2")+
+  theme_minimal()
+
+
+```
+
+
+
+
+```{r clustering no jerarquico: k-means}
+
+df_numeric <- df[,-1] # Excluir la columna de clase porque no es válida dentro del análisis
+
+# Para conocer cuál es el número óptimo de k se realiza la siguiente función:
+
+fviz_nbclust(df_numeric, kmeans, method = "wss") +
+  ggtitle("optimal number of clusters", subtitle = "") +
+  theme_classic()
+
+```
+
+```{r k-means 2}
+# A continuación, con el número de cluster óptimo obtenido, en este caso, 2 realizamos la clusterización:
+
+kmeans.result <- kmeans(df_numeric, centers = 2, iter.max = 500, nstart = 25)
+fviz_cluster(kmeans.result, df_numeric, xlab = '', ylab = '') +
+  ggtitle("Cluster plot, centers = 4", subtitle = "") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r MDS}
@@ -125,54 +221,13 @@ ggplot(tsne_df, aes(x=Dim1, y=Dim2, colour = Class))+
 ```
 
 
-```{r training split}
-#Vamos a clasificar por tipo de tumor (AGH, CFB, CGC, CHC y HPB)
-
-table(df$Class)
-
-df$Class <- as.factor(df$Class)
-
-#Vamos a sembrar una semilla y dividir el set para el entrenamiento
-
-set.seed(1998)
-trainIndex <- createDataPartition(df$Class, p = 0.8, list = FALSE)
-trainData <- df[trainIndex,]
-testData <- df[-trainIndex,]
-
-# Convertir la variable objetivo en factor (si no lo está)
-train_data$Class <- as.factor(train_data$Class)
-test_data$Class <- as.factor(test_data$Class)
-```
-
-```{r clustering no jerarquico: k-means}
-
-# Nota: para poder realizar los clusterings se han los datos pero sin los nombres de las clases:
-
-df_scaled <- scale(data2)
-
-# A continuación, aparece el código para la implementación del clustering no jerárquico K-means:
-
-kmeans.result <- kmeans(df_scaled, centers = 2, iter.max = 500, nstart = 25)
-fviz_cluster(kmeans.result, df_scaled, xlab = '', ylab = '') +
-  ggtitle("Cluster plot, centers = 2", subtitle = "") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5, margin = margin(b = -10)))
-
-# Para conocer cuál es el número óptimo de k se realiza la siguiente función:
-
-fviz_nbclust(data2, kmeans, method = "wss") +
-  ggtitle("optimal number of clusters", subtitle = "") +
-  theme_classic()
-
-```
-
 ```{r clustering jerarquico aglomerativo: Ward's Linkage}
 
 # Implementación del clustering aglomerativo:
 
 # Primero hay que calcular la distancia de la matriz:
 
-dist_matrix <- dist(df_scaled)
+dist_matrix <- dist(df_numeric)
 
 # Hay que ejecutar el algoritmo de clusterización jerárquica aglomerativa "varianza mínima de Ward":
 
@@ -196,8 +251,26 @@ plot(clust_ward, main = "Ward's Linkage")
 
 ```
 
+```{r training split}
+#Vamos a clasificar por tipo de tumor (AGH, CFB, CGC, CHC y HPB)
+
+table(df$Class)
+
+df$Class <- as.factor(df$Class)
+
+#Vamos a sembrar una semilla y dividir el set para el entrenamiento
+
+set.seed(1998)
+trainIndex <- createDataPartition(df$Class, p = 0.8, list = FALSE)
+trainData <- df[trainIndex,]
+testData <- df[-trainIndex,]
+
+# Convertir la variable objetivo en factor (si no lo está)
+trainData$Class <- as.factor(trainData$Class)
+testData$Class <- as.factor(testData$Class)
+```
+
 ```{r random forest}
-modelLookup(model = "rf")
 
 set.seed(1998)
 rfModel <- train(Class ~ .,
@@ -219,28 +292,29 @@ print(CMrf)
 
 # Extraemos las métricas de precisión, sensibilidad, recall y calculamos F1-score para cada clase 
 
-precision <- CMrf$byClass[, "Pos Pred Value"] 
-recall <- CMrf$byClass[, "Sensitivity"]      
-especificidad <- CMrf$byClass[,"Specificity"]
-f1_scores <- 2 * (precision * recall) / (precision + recall)
+precision_rf <- CMrf$byClass[, "Pos Pred Value"] 
+recall_rf <- CMrf$byClass[, "Sensitivity"]      
+especificidad_rf <- CMrf$byClass[,"Specificity"]
+f1_scores_rf <- 2 * (precision_rf * recall_rf) / (precision_rf + recall_rf)
 
 # Mostramos las métricas de sensibilidad, especificidad, precisión y F1-Score por clase
 
 cat("Precisión:\n")
-print(precision)
+print(precision_rf)
 cat("Recall (sensibilidad):\n")
-print(recall)
+print(recall_rf)
 cat("Especificidad:\n")
-print(especificidad)
+print(especificidad_rf)
 cat("F1-Score:\n")
-print(f1_scores)
+print(f1_scores_rf)
 ```
 
 ```{r SVM}
 
 # Entrenar el modelo SVM
+
 set.seed(1998)  
-svm_model <- svm(Class ~ ., data = train_data, kernel = "linear", scale = TRUE)
+svm_model <- svm(Class ~ ., data = trainData, kernel = "linear", scale = TRUE)
 
 # Ver un resumen del modelo
 summary(svm_model)
@@ -248,47 +322,73 @@ summary(svm_model)
 ## Realizar predicciones
 
 # Predicción en el conjunto de prueba
-predictions <- predict(svm_model, test_data)
+predictions <- predict(svm_model, testData)
 
 # Crear matriz de confusión
-library(caret)
-confusion_mat <- confusionMatrix(predictions, test_data$Class)
+confusion_mat <- confusionMatrix(predictions, testData$Class)
 
 # Mostrar matriz de confusión
 print(confusion_mat)
 
-# Extraer métricas clave
-accuracy <- confusion_mat$overall["Accuracy"]      # Precisión
-precision <- confusion_mat$byClass["Precision"]    # Precisión por clase
-recall <- confusion_mat$byClass["Recall"]          # Sensibilidad
-specificity <- confusion_mat$byClass["Specificity"]  # Especificidad
-f1_score <- 2 * (precision * recall) / (precision + recall)  # Score F1
+precision_svm <- confusion_mat$byClass[, "Pos Pred Value"] 
+recall_svm <- confusion_mat$byClass[, "Sensitivity"]      
+especificidad_svm <- confusion_mat$byClass[,"Specificity"]
+f1_scores_svm <- 2 * (precision_svm * recall_svm) / (precision_svm + recall_svm)
 
-# Mostrar métricas
-cat("Precisión (Accuracy): ", accuracy, "\n")
-cat("Precisión (Precision): ", precision, "\n")
-cat("Sensibilidad (Recall): ", recall, "\n")
-cat("Especificidad: ", specificity, "\n")
-cat("Score F1: ", f1_score, "\n")
+cat("Precisión:\n")
+print(precision_svm)
+cat("Recall (sensibilidad):\n")
+print(recall_svm)
+cat("Especificidad:\n")
+print(especificidad_svm)
+cat("F1-Score:\n")
+print(f1_scores_svm)
 
-## Visualizar la separación de clases
+```
 
-# Graficar con ggplot2
-library(ggplot2)
-train_data$Prediction <- predict(svm_model, train_data)
 
-ggplot(train_data, aes(x = train_data[, 2], y = train_data[, 3], color = Prediction)) +
-  geom_point(size = 2) +
-  labs(title = "Separación de Clases por SVM", x = "Variable 1", y = "Variable 2") +
-  theme_minimal()
 
-##.Guardar los resultados
+```{r decission tree}
 
-# Guardar el modelo SVM
-saveRDS(svm_model, "svm_classification_model.rds")
+### Método Decission Tree ###
 
-# Guardar la matriz de confusión
-write.csv(as.table(confusion_mat), "confusion_matrix.csv", row.names = TRUE)
+set.seed(1998)
+
+dtModel <- train(Class ~.,
+                 data = trainData,
+                 method = "rpart",
+                 trControl = trainControl(method = "cv", number = 10),
+                 tuneLength = 10)
+dtModel
+
+plot(dtModel)
+
+fancyRpartPlot(dtModel$finalModel, type=4)
+
+predictions_dt <- predict(dtModel, newdata = testData, type = "raw")
+
+# Matriz de confusión del modelo Decission Tree
+
+CM_dt <- confusionMatrix(predictions_dt, testData$Class)
+
+# Mostramos la matriz de confusión
+
+print(CM_dt)
+
+precision_dt <- CM_dt$byClass[, "Pos Pred Value"] 
+recall_dt <- CM_dt$byClass[, "Sensitivity"]      
+especificidad_dt <- CM_dt$byClass[,"Specificity"]
+f1_scores_dt <- 2 * (precision_dt * recall_dt) / (precision_dt + recall_dt)
+
+cat("Precisión:\n")
+print(precision_dt)
+cat("Recall (sensibilidad):\n")
+print(recall_dt)
+cat("Especificidad:\n")
+print(especificidad_dt)
+cat("F1-Score:\n")
+print(f1_scores_dt)
+
 
 ```
 
